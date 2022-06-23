@@ -1,3 +1,4 @@
+const { response } = require("express");
 const express = require("express");
  
 // recordRoutes is an instance of the express router.
@@ -41,7 +42,7 @@ recordRoutes.route("/record/add").post(function (req, response) {
  let db_connect = dbo.getDb();
  let myobj = {
    name: req.body.name,
-   date: req.body.date,
+   year: req.body.year,
    address: req.body.address,
    email: req.body.email,
  };
@@ -58,7 +59,7 @@ recordRoutes.route("/update/:id").post(function (req, response) {
  let newvalues = {   
    $set: {     
     name: req.body.name,
-    date: req.body.date,
+    year: req.body.year,
     address: req.body.address,
     email: req.body.email,  
    }, 
@@ -75,5 +76,47 @@ recordRoutes.route("/:id").delete((req, response) => {
    response.json(obj);
  });
 });
+
+// Adding the routes for servicing NFT metadata
+
+recordRoutes.route('/metadata/:id').get((req,response) => {
+
+  let db_connect = dbo.getDb();
+  let myquery = { _id: ObjectId( req.params.id )};
+  db_connect
+      .collection("users")
+      .findOne(myquery, function (err, result) {
+        if (err) throw err;
+        let nftMetadata = {}
+        nftMetadata.name = result.name + " of " + convertToZodiac(result.year);
+        nftMetadata.description = "Okay this is epic"
+        nftMetadata.image = "https://i.redd.it/a1zcxisgjls71.png" //Need to build a way to serve the image :0 
+        nftMetadata.animation_url = "https://i.redd.it/a1zcxisgjls71.png" // Not needed at the moment
+        nftMetadata.external_url = "https://i.redd.it/a1zcxisgjls71.png"
+        nftMetadata.attributes = "{}"
+        response.json(nftMetadata);
+      });
+
+})
+
+//Date to zodiac conversions
+function convertToZodiac(year){
+  let zodiac = [
+    "Rat",
+    "Ox",
+    "Tiger",
+    "Rabbit",
+    "Dragon",
+    "Snake",
+    "Horse",
+    "Goat",
+    "Monkey",
+    "Rooster",
+    "Dog",
+    "Pig"
+  ]
+  return zodiac[(year - 4) % 12]
+}
+
  
 module.exports = recordRoutes;
