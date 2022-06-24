@@ -12,7 +12,11 @@ const dbo = require("../db/conn");
 // This help convert the id from string to ObjectId for the _id.
 const ObjectId = require("mongodb").ObjectId;
  
- 
+ // TODO: Adding the routes for servicing NFT metadata
+recordRoutes.route('/').get((req,response) => {
+  response.json("Hello world! Welcome to the 888dao hackathon backend :3 ")
+})
+
 // This section will help you get a list of all the records.
 recordRoutes.route("/record").get(function (req, res) {
  let db_connect = dbo.getDb("users");
@@ -65,6 +69,20 @@ recordRoutes.route("/update/:id").post(function (req, response) {
    }, 
   }
 });
+
+//Trying to create a new route that updates eth via addresses 
+recordRoutes.route("/address/:address").post(function (req, response) {
+  let db_connect = dbo.getDb(); 
+  let myquery = { _id: ObjectId( req.params.address )}; 
+  let newvalues = {   
+    $set: {     
+     name: req.body.name,
+     year: req.body.year,
+     address: req.body.address,
+     email: req.body.email,  
+    }, 
+   }
+ });
  
 // This section will help you delete a record
 recordRoutes.route("/:id").delete((req, response) => {
@@ -77,18 +95,18 @@ recordRoutes.route("/:id").delete((req, response) => {
  });
 });
 
-// Adding the routes for servicing NFT metadata
 
-recordRoutes.route('/metadata/:id').get((req,response) => {
+
+recordRoutes.route('/metadata/:ethaddress').get((req,response) => {
 
   let db_connect = dbo.getDb();
-  let myquery = { _id: ObjectId( req.params.id )};
+  let myquery = { address: String( req.params.ethaddress )};
   db_connect
       .collection("users")
       .findOne(myquery, function (err, result) {
         if (err) throw err;
         let nftMetadata = {}
-        nftMetadata.name = result.name + " of " + convertToZodiac(result.year);
+        nftMetadata.name = result.name + " | Year of the " + convertToZodiac(result.year);
         nftMetadata.description = "Okay this is epic"
         nftMetadata.image = "https://i.redd.it/a1zcxisgjls71.png" //Need to build a way to serve the image :0 
         nftMetadata.animation_url = "https://i.redd.it/a1zcxisgjls71.png" // Not needed at the moment
@@ -98,6 +116,14 @@ recordRoutes.route('/metadata/:id').get((req,response) => {
       });
 
 })
+
+// This section will query the image.
+recordRoutes.route("/image").post(function (req, response) {
+
+});
+
+
+// Create routes to accesss images 
 
 //Date to zodiac conversions
 function convertToZodiac(year){
